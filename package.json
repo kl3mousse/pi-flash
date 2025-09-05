@@ -1,0 +1,11 @@
+{
+  "name": "webxdc-game-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal scaffold for a Webxdc app using webxdc-dev",
+  "scripts": {
+    "dev": "webxdc-dev run src",
+    "pack": "mkdir -p dist && (cd src && zip -9 -r - *) > dist/app.xdc",
+    "dev:xdc": "npm run pack && webxdc-dev run dist/app.xdc"
+  }
+}
