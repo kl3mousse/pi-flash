@@ -3,46 +3,83 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Webxdc Game MVP</title>
+    <title>Pi Flash — webxdc</title>
     <link rel="icon" href="icon.png" />
     <script src="webxdc.js"></script>
-    <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
-      .row { display: flex; gap: .5rem; align-items: center; }
-      input[type="text"] { flex: 1; padding: .5rem .75rem; font-size: 1rem; }
-      button, a.button { padding: .5rem .75rem; font-size: 1rem; cursor: pointer; }
-      #output { margin-top: 1rem; line-height: 1.6; }
-    </style>
+  <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Webxdc Game MVP</h1>
-    <div class="row">
-      <input id="input" type="text" placeholder="Type a message" />
-      <button id="send">Send</button>
-    </div>
-    <p id="output"></p>
-    <script>
-      const input = document.getElementById('input');
-      const output = document.getElementById('output');
-      const sendBtn = document.getElementById('send');
+    <header class="app-header">
+      <h1>Pi Flash</h1>
+    </header>
 
-      function sendMsg() {
-        const msg = input.value.trim();
-        if (!msg) return;
-        window.webxdc.sendUpdate({ payload: msg }, `Someone typed "${msg}".`);
-        input.value = '';
-        input.focus();
-      }
+    <main id="game" class="game">
+      <div class="hud hud-inline" aria-label="status">
+        <div id="lives" class="lives" aria-label="lives">❤️❤️❤️</div>
+        <div id="score" class="score" aria-label="score">🔢 0</div>
+      </div>
+      <div class="timer" aria-label="time remaining">
+        <div id="timer-bar" class="timer-bar" style="width:0%"></div>
+        <span id="timer-text" class="sr-only">—</span>
+      </div>
+      <!-- Start Screen -->
+      <section id="screen-start" class="screen active" aria-live="polite">
+        <h2>Memorize the digits of π</h2>
+        <p>Watch the digits, then type them back. You have 3 lives.</p>
+        <div class="debug-row">
+          <label for="debug-level">Start at</label>
+          <input id="debug-level" type="number" min="1" max="200" step="1" value="3" />
+          <span>digits</span>
+        </div>
+        <button id="btn-start" class="primary icon-btn" aria-label="Start" title="Start" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M8 5v14l11-7z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </section>
 
-      function receiveUpdate(update) {
-        output.innerHTML += `${update.payload}<br>`;
-      }
+      <!-- Round Screen -->
+      <section id="screen-round" class="screen" aria-live="polite">
+  <div id="digits" class="digits" aria-label="digits"></div>
 
-      window.webxdc.setUpdateListener(receiveUpdate, 0);
-      sendBtn.addEventListener('click', sendMsg);
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') sendMsg();
-      });
-    </script>
+        <!-- Life loss overlay -->
+        <div id="life-overlay" class="life-overlay" aria-hidden="true">
+          <div class="life-overlay-inner">
+            <span class="life-heart" data-slot="1">❤️</span>
+            <span class="life-heart" data-slot="2">❤️</span>
+            <span class="life-heart" data-slot="3">❤️</span>
+          </div>
+        </div>
+
+        <div id="pad" class="pad" aria-label="digit keypad">
+          <button data-digit="1" class="pad-btn" aria-label="1">1</button>
+          <button data-digit="2" class="pad-btn" aria-label="2">2</button>
+          <button data-digit="3" class="pad-btn" aria-label="3">3</button>
+          <button data-digit="4" class="pad-btn" aria-label="4">4</button>
+          <button data-digit="5" class="pad-btn" aria-label="5">5</button>
+          <button data-digit="6" class="pad-btn" aria-label="6">6</button>
+          <button data-digit="7" class="pad-btn" aria-label="7">7</button>
+          <button data-digit="8" class="pad-btn" aria-label="8">8</button>
+          <button data-digit="9" class="pad-btn" aria-label="9">9</button>
+          <button data-digit="0" class="pad-btn zero-span" aria-label="0">0</button>
+        </div>
+
+        
+      </section>
+
+      <!-- Game Over Screen -->
+      <section id="screen-gameover" class="screen" aria-live="polite">
+        <h2>Game Over</h2>
+  <p id="final-score" class="score-line" aria-label="score">🔢 0</p>
+  <p id="best-score" class="best-line" aria-label="best score">🏅 0</p>
+        <button id="btn-retry" class="primary icon-btn" aria-label="Retry" title="Retry" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6a6 6 0 1 1-6-6 1 1 0 1 0 0-2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8c0-4.08-3.05-7.44-7-7.94z"/>
+          </svg>
+        </button>
+      </section>
+    </main>
+
+    <script src="main.js"></script>
   </body>
 </html>

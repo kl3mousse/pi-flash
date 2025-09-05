@@ -1,0 +1,459 @@
+// Pi Flash - single-player memory mini-game for webxdc
+// Core loop: START -> SHOW_DIGITS -> HIDE_DIGITS -> INPUT -> CHECK -> NEXT_ROUND or GAME_OVER
+// Author: you
+
+(function () {
+  'use strict';
+
+  // ------------------------------
+  // Constants & Config
+  // ------------------------------
+  // Source with decimal, then converted to digits-only for gameplay (simpler UX: type digits only)
+  const PI_SOURCE = (
+    '3.14159265358979323846264338327950288419716939937510' +
+    '58209749445923078164062862089986280348253421170679' +
+    '82148086513282306647093844609550582231725359408128' +
+    '48111745028410270193852110555964462294895493038196' +
+    '44288109756659334461284756482337867831652712019091' +
+    '45648566923460348610454326648213393607260249141273' +
+    '72458700660631558817488152092096282925409171536436'
+  ); // > 200 chars including one dot
+  const PI_DIGITS = PI_SOURCE.replace(/\./g, ''); // digits only: 3141592...
+
+  const STATES = {
+    START: 'START',
+    SHOW: 'SHOW_DIGITS',
+    HIDE: 'HIDE_DIGITS',
+    INPUT: 'INPUT',
+    CHECK: 'CHECK',
+    GAME_OVER: 'GAME_OVER',
+  };
+
+  const INPUT_BASE_TIME = 10; // seconds
+  const INPUT_PER_DIGIT = 1; // + seconds per digit
+  const LIVES_MAX = 3;
+  const MILESTONES = [10, 20, 30];
+
+  // ------------------------------
+  // Elements
+  // ------------------------------
+  const el = {
+    screenStart: document.getElementById('screen-start'),
+    screenRound: document.getElementById('screen-round'),
+    screenGameOver: document.getElementById('screen-gameover'),
+    btnStart: document.getElementById('btn-start'),
+  dbgLevel: document.getElementById('debug-level'),
+  // submit button removed
+    btnRetry: document.getElementById('btn-retry'),
+  digits: document.getElementById('digits'),
+  pad: document.getElementById('pad'),
+  // hint removed
+    lives: document.getElementById('lives'),
+    score: document.getElementById('score'),
+  timerBar: document.getElementById('timer-bar'),
+  timerText: document.getElementById('timer-text'),
+  // mode pill removed
+  lifeOverlay: document.getElementById('life-overlay'),
+  };
+
+  // ------------------------------
+  // Game State
+  // ------------------------------
+  const state = {
+    phase: STATES.START,
+    round: 1, // number of digits to show this round
+    lives: LIVES_MAX,
+    score: 0, // number of digits remembered correctly overall (max streak)
+    best: Number(localStorage.getItem('pi_flash_best') || 0),
+    shown: '', // the digits shown for the round
+  typed: '', // the digits typed via keypad
+  typedIndex: 0, // current index for per-digit validation
+    timerId: null,
+    timeLeft: 0,
+  };
+
+  // ------------------------------
+  // Utility functions
+  // ------------------------------
+  function setScreen(activeId) {
+    const ids = ['screen-start', 'screen-round', 'screen-gameover'];
+    ids.forEach((id) => {
+      document.getElementById(id).classList.toggle('active', id === activeId);
+    });
+  }
+
+  function updateHUD() {
+  el.lives.textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(LIVES_MAX - state.lives);
+  // change score icon based on milestone tier
+  let icon = '🔢';
+  if (state.score >= 30) icon = '🥇';
+  else if (state.score >= 20) icon = '🥈';
+  else if (state.score >= 10) icon = '🥉';
+  el.score.textContent = `${icon} ${state.score}`;
+  // timer progress bar
+  const total = state._timeTotal || 0;
+  const left = Math.max(0, state.timeLeft);
+  const pct = total > 0 ? (left / total) * 100 : 0;
+  if (el.timerBar) el.timerBar.style.width = `${pct}%`;
+  if (el.timerText) el.timerText.textContent = left > 0 ? `${left}s` : '—';
+  }
+
+  function getRoundDigits(n) {
+    // Take first n digits (no decimal point)
+    return PI_DIGITS.slice(0, n);
+  }
+
+  function clearTimer() {
+    if (state.timerId) {
+      clearInterval(state.timerId);
+      state.timerId = null;
+    }
+  }
+
+  function startTimer(seconds, onExpire) {
+    clearTimer();
+  state._timeTotal = Math.max(0, Math.floor(seconds));
+  state.timeLeft = state._timeTotal;
+    updateHUD();
+    state.timerId = setInterval(() => {
+      state.timeLeft -= 1;
+      updateHUD();
+      if (state.timeLeft <= 0) {
+        clearTimer();
+        onExpire?.();
+      }
+    }, 1000);
+  }
+
+  function milestoneClass(score) {
+  if (score >= 30) return 'milestone-gold';
+  if (score >= 20) return 'milestone-silver';
+  if (score >= 10) return 'milestone-bronze';
+    return '';
+  }
+
+  function sizeTier(len) {
+    if (len >= 40) return 'size-5';
+    if (len >= 30) return 'size-4';
+    if (len >= 20) return 'size-3';
+    if (len >= 14) return 'size-2';
+    return ''; 
+  }
+
+  function formatWithPiDot(s) {
+    if (!s) return '';
+    if (s.length === 1) return `${s}.`;
+    return `${s[0]}.${s.slice(1)}`;
+  }
+
+  function renderShowWithBoldLast(s) {
+    // s is digits-only for the round
+    if (!s) return '';
+    if (s.length === 1) {
+      return `<strong class="new-digit">${s}</strong>.`;
+    }
+    const left = s.slice(0, -1); // all but last
+    const last = s.slice(-1);
+    const leftWithDot = `${left[0]}.${left.slice(1)}`;
+    return `${leftWithDot}<strong class="new-digit">${last}</strong>`;
+  }
+
+  function autoScaleDigits() {
+    const box = el.digits;
+    if (!box) return;
+    // store original size in dataset
+    if (!box.dataset.baseSize) {
+      const cs = getComputedStyle(box);
+      box.dataset.baseSize = cs.fontSize;
+    }
+    // reset to base size
+    box.style.fontSize = box.dataset.baseSize || '';
+    // no-op now with wrapping approach; keep function for calls
+  }
+
+  function announceMilestoneIfAny() {
+    const s = state.score;
+    if (MILESTONES.includes(s)) {
+      const tier = s === 10 ? 'Bronze 🥉' : s === 20 ? 'Silver 🥈' : 'Gold 🥇';
+      el.digits.classList.add('flash');
+      setTimeout(() => el.digits.classList.remove('flash'), 600);
+      spawnFloatEmoji('🏆');
+    }
+  }
+
+  function spawnFloatEmoji(emoji = '👍') {
+    try {
+      const origin = el.pad || el.digits || document.body;
+      const rect = origin.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const elSpan = document.createElement('span');
+      elSpan.className = 'float-emoji';
+      elSpan.textContent = emoji;
+      elSpan.style.left = `${x}px`;
+      elSpan.style.top = `${y}px`;
+      document.body.appendChild(elSpan);
+      setTimeout(() => elSpan.remove(), 800);
+    } catch (_) { /* ignore */ }
+  }
+
+  // Confetti helper (simple DOM based)
+  function runConfetti(duration = 2200, cb) {
+    const layer = document.createElement('div');
+    layer.className = 'confetti-layer';
+    const colors = ['#f87171','#fb923c','#fbbf24','#34d399','#60a5fa','#a78bfa','#f472b6','#2dd4bf'];
+    const pieces = 70;
+    for (let i=0;i<pieces;i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      const color = colors[i % colors.length];
+      p.style.background = color;
+      const startX = (Math.random()*100); // vw
+      const drift = (Math.random()*40 - 20); // -20..20 vw
+      p.style.setProperty('--x', startX+'vw');
+      p.style.setProperty('--x-end', (startX+drift)+'vw');
+      const rot = Math.random()*180 - 90;
+      const rotEnd = rot + (Math.random()*720 - 360);
+      p.style.setProperty('--r', rot+'deg');
+      p.style.setProperty('--r-end', rotEnd+'deg');
+      const dur = 2.6 + Math.random()*1.5;
+      p.style.setProperty('--dur', dur+'s');
+      p.classList.add('animate');
+      layer.appendChild(p);
+    }
+    document.body.appendChild(layer);
+    setTimeout(()=>{
+      layer.remove();
+      cb && cb();
+    }, duration);
+  }
+
+  // ------------------------------
+  // State transitions
+  // ------------------------------
+  function toStart() {
+    state.phase = STATES.START;
+  state.round = 3; // start with 3 digits -> displays as 3.14
+    state.lives = LIVES_MAX;
+    state.score = 0;
+    state.shown = '';
+  state.typedIndex = 0;
+  if (el.hint) el.hint.textContent = '';
+  state.typed = '';
+  el.digits.textContent = '';
+  // reset overlay hearts
+  if (el.lifeOverlay) {
+    el.lifeOverlay.querySelectorAll('.life-heart').forEach((h,i) => {
+      h.classList.remove('losing','lost');
+    });
+    el.lifeOverlay.classList.remove('active');
+  }
+    document.querySelector('.game').classList.remove('milestone-bronze', 'milestone-silver', 'milestone-gold');
+  document.querySelector('.game').classList.remove('phase-memorize', 'phase-input');
+    setScreen('screen-start');
+    clearTimer();
+    state.timeLeft = 0;
+    updateHUD();
+  }
+
+  function toShowDigits() {
+    state.phase = STATES.SHOW;
+    setScreen('screen-round');
+  const game = document.querySelector('.game');
+  game.classList.add('phase-memorize');
+  game.classList.remove('phase-input');
+  // mode pill removed
+  state.typed = '';
+  state.typedIndex = 0;
+  el.digits.textContent = '';
+  // submit removed
+
+  state.shown = getRoundDigits(state.round);
+  // Show with the new (last) digit in bold and a dot after the first 3
+  el.digits.innerHTML = renderShowWithBoldLast(state.shown);
+  // apply size tier
+  el.digits.classList.remove('size-2','size-3','size-4','size-5');
+  const tier = sizeTier(state.round);
+  if (tier) el.digits.classList.add(tier);
+  requestAnimationFrame(autoScaleDigits);
+  if (el.hint) el.hint.textContent = `Round ${state.round}: Remember these digits.`;
+
+    // Show for a short delay: proportional to digits but capped
+    const showMs = Math.min(5000, 800 + state.round * 250);
+    setTimeout(toHideDigits, showMs);
+  }
+
+  function toHideDigits() {
+    state.phase = STATES.HIDE;
+  el.digits.textContent = '······';
+  if (el.hint) el.hint.textContent = 'Now type the digits';
+
+    // Move to input state shortly after hiding
+  setTimeout(toInput, 300);
+  }
+
+  function toInput() {
+    state.phase = STATES.INPUT;
+  // submit removed; input is via keypad only
+  const game = document.querySelector('.game');
+  game.classList.remove('phase-memorize');
+  game.classList.add('phase-input');
+  // mode pill removed
+
+  const time = INPUT_BASE_TIME + INPUT_PER_DIGIT * state.round;
+    startTimer(time, () => {
+      // Treat as wrong if time expires
+      handleGuess(false);
+    });
+  }
+
+  function toCheck() {
+    state.phase = STATES.CHECK;
+  const ok = state.typed === state.shown;
+  handleGuess(ok);
+  }
+
+  function toNextRound() {
+    state.round += 1;
+    state.score = Math.max(state.score, state.round - 1); // score is max digits remembered
+    document.querySelector('.game').classList.remove('milestone-bronze', 'milestone-silver', 'milestone-gold');
+    const cls = milestoneClass(state.score);
+    if (cls) document.querySelector('.game').classList.add(cls);
+    const reachedMilestone = MILESTONES.includes(state.score);
+    if (reachedMilestone && state.score === 10) {
+      // celebrate first milestone with confetti, then continue
+      runConfetti(2300, () => {
+        announceMilestoneIfAny();
+        toShowDigits();
+      });
+    } else {
+      announceMilestoneIfAny();
+      toShowDigits();
+    }
+    updateHUD();
+  }
+
+  function toGameOver() {
+    state.phase = STATES.GAME_OVER;
+    clearTimer();
+  // Keep score as last successful length (already set on success)
+    if (state.score > state.best) {
+      state.best = state.score;
+      localStorage.setItem('pi_flash_best', String(state.best));
+    }
+    setScreen('screen-gameover');
+  document.querySelector('.game').classList.remove('phase-memorize', 'phase-input');
+  document.getElementById('final-score').textContent = `🔢 ${state.score}`;
+  document.getElementById('best-score').textContent = `🏅 ${state.best}`;
+
+    // Optional: send status update to chat
+    try {
+      window.webxdc?.sendUpdate?.({
+        payload: { type: 'game_over', score: state.score, best: state.best },
+      }, `Pi Flash — scored ${state.score} (best ${state.best})`);
+    } catch (_) { /* noop */ }
+  }
+
+  function handleGuess(isCorrect) {
+    clearTimer();
+  // submit removed
+
+    if (isCorrect) {
+      if (el.hint) el.hint.textContent = 'Correct! +1 digit';
+  spawnFloatEmoji('👍');
+  setTimeout(() => toNextRound(), 800);
+    } else {
+      const prevLives = state.lives;
+      state.lives -= 1;
+      if (el.hint) el.hint.textContent = `Wrong. It was ${state.shown}`;
+      updateHUD();
+      // Trigger life loss overlay animation for the heart that was just lost
+      try {
+        if (el.lifeOverlay) {
+          el.lifeOverlay.classList.add('active');
+          const lostIndex = prevLives; // hearts numbered 1..3
+          const heartEl = el.lifeOverlay.querySelector(`.life-heart[data-slot="${lostIndex}"]`);
+          if (heartEl) {
+            heartEl.classList.remove('lost');
+            heartEl.classList.add('losing');
+            setTimeout(() => {
+              heartEl.classList.remove('losing');
+              heartEl.classList.add('lost');
+            }, 620);
+          }
+          // hide overlay after delay unless game over to allow cumulative view
+          setTimeout(() => {
+            if (state.lives > 0) {
+              el.lifeOverlay.classList.remove('active');
+            }
+          }, 950);
+        }
+      } catch(_) { /* ignore */ }
+      if (state.lives <= 0) {
+        // wait for heart animation to finish before showing game over
+        setTimeout(() => {
+          toGameOver();
+          // keep overlay active a touch longer for dramatic effect
+          setTimeout(()=> el.lifeOverlay?.classList.remove('active'), 500);
+        }, 700);
+      } else {
+        // retry same round (do not increase round) after animation wraps
+        setTimeout(toShowDigits, 900);
+      }
+    }
+  }
+
+  // ------------------------------
+  // Event wiring
+  // ------------------------------
+  el.btnStart?.addEventListener('click', () => {
+    // Use debug level if provided
+    const v = Number(el.dbgLevel?.value ?? '');
+    if (Number.isFinite(v) && v >= 1 && v <= PI_DIGITS.length) {
+      state.round = Math.floor(v);
+    } else {
+      state.round = 3;
+    }
+    toShowDigits();
+  });
+
+  // Keypad handling
+  el.pad?.addEventListener('click', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLElement)) return;
+    if (state.phase !== STATES.INPUT) return;
+  const d = t.getAttribute('data-digit');
+  if (d) {
+      // Per-digit validation: compare to expected digit
+      const expected = state.shown[state.typedIndex];
+      if (d === expected) {
+  state.typed += d;
+  state.typedIndex += 1;
+  el.digits.textContent = formatWithPiDot(state.typed);
+  // keep size tier applied during input as well
+  el.digits.classList.remove('size-2','size-3','size-4','size-5');
+  const tier = sizeTier(state.typed.length);
+  if (tier) el.digits.classList.add(tier);
+  requestAnimationFrame(autoScaleDigits);
+        // Completed all digits correctly -> success immediately
+        if (state.typedIndex >= state.shown.length) {
+          toCheck();
+        }
+      } else {
+        // First mistake -> immediate failure
+        toCheck();
+      }
+    }
+  });
+
+  el.btnRetry?.addEventListener('click', () => {
+    toStart();
+  });
+
+  // (Chat message UI and listeners removed; game sends an optional status on game over only.)
+
+  // ------------------------------
+  // Initialize
+  // ------------------------------
+  toStart();
+})();

@@ -1,11 +1,13 @@
-# Webxdc Game MVP
+# Pi Flash — a webxdc mini‑game
 
-A minimal Webxdc app scaffold to start building your game. Uses `webxdc-dev` for local multi-user simulation.
+Single‑player memory game to learn digits of π. Watch digits, then type them back. 3 lives. Simple milestones at 10/20/50.
 
 ## Structure
 
-- `src/index.html` — minimal app based on docs example
+- `src/index.html` — Pi Flash UI + message area
 - `src/manifest.toml` — optional metadata (name, source code URL)
+- `src/main.js` — game logic and state machine
+- `src/styles.css` — basic styling
 
 ## Develop
 
@@ -15,7 +17,7 @@ If you have `webxdc-dev` installed globally, you can run the app from the `src` 
 webxdc-dev run src
 ```
 
-This opens the simulator with multiple instances. Use the UI to start/reload instances and observe messages.
+This opens the simulator. Start the game with the Start button. When a game ends, a status update with the score is sent, so you can see results in the chat history panel.
 
 ## Package (.xdc)
 
@@ -29,6 +31,6 @@ You can then share `dist/app.xdc` in Delta Chat or Cheogram.
 
 ## Next steps
 
-- Replace the simple input with initial game UI/logic.
 - Add an icon at `src/icon.png` (square 128–512px).
-- Optionally add @webxdc/types for TS typings.
+- Optional: add @webxdc/types for TS typings.
+- Optional: bonus rounds every 5 digits (guess next digit), visuals at milestones.
