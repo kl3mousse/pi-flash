@@ -52,9 +52,6 @@ webxdc-dev run src
 
 This launches the simulator. Open the console for logs if needed. Use the debug input on the start screen to jump to a higher starting length for testing long sequences.
 
-### Hot Reload Note
-If your environment doesn’t auto‑reload, re-run or refresh manually after edits.
-
 ## Packaging (.xdc)
 
 Create a distributable `.xdc` (zip of `src` contents):
@@ -81,7 +78,7 @@ Share `dist/pi-flash.xdc` in any Delta Chat / webxdc compatible client.
 
 ## License
 
-MIT (adjust if you add assets requiring attribution).
+MIT.
 
 ---
 Made for the webxdc platform. Have fun memorizing π! 🥧
