@@ -147,12 +147,11 @@
   }
 
   function renderShowWithBoldLast(s) {
-    // s is digits-only for the round
     if (!s) return '';
     if (s.length === 1) {
       return `<strong class="new-digit">${s}</strong>.`;
     }
-    const left = s.slice(0, -1); // all but last
+    const left = s.slice(0, -1);
     const last = s.slice(-1);
     const leftWithDot = `${left[0]}.${left.slice(1)}`;
     return `${leftWithDot}<strong class="new-digit">${last}</strong>`;
@@ -174,7 +173,7 @@
   function announceMilestoneIfAny() {
     const s = state.score;
     if (MILESTONES.includes(s)) {
-      const tier = s === 10 ? 'Bronze 🥉' : s === 20 ? 'Silver 🥈' : 'Gold 🥇';
+  const tier = s === 10 ? T('milestone10') : s === 20 ? T('milestone20') : T('milestone30');
       el.digits.classList.add('flash');
       setTimeout(() => el.digits.classList.remove('flash'), 600);
       spawnFloatEmoji('🏆');
@@ -195,6 +194,18 @@
       document.body.appendChild(elSpan);
       setTimeout(() => elSpan.remove(), 800);
     } catch (_) { /* ignore */ }
+  }
+
+  // Feedback helpers
+  function vibrate(pattern){
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(_) {}
+  }
+  function pulsePad(btn, cls){
+    if(!btn) return;
+    btn.classList.remove('pressed','ok','fail');
+    void btn.offsetWidth; // force reflow
+    btn.classList.add(cls);
+    setTimeout(()=> btn.classList.remove(cls), 500);
   }
 
   // Confetti helper (simple DOM based)
@@ -365,7 +376,8 @@
     } else {
       const prevLives = state.lives;
       state.lives -= 1;
-      if (el.hint) el.hint.textContent = `Wrong. It was ${state.shown}`;
+  if (el.hint) el.hint.textContent = `Wrong. It was ${state.shown}`;
+  vibrate([40,40,60]);
       updateHUD();
       // Trigger life loss overlay animation for the heart that was just lost
       try {
@@ -417,6 +429,24 @@
     toShowDigits();
   });
 
+  // Apply static translations to elements with data-i18n / data-i18n-label
+  function applyTranslations(){
+    try {
+      document.querySelectorAll('[data-i18n]').forEach(node => {
+        const key = node.getAttribute('data-i18n');
+        if(key) node.textContent = T(key);
+      });
+      document.querySelectorAll('[data-i18n-label]').forEach(node => {
+        const key = node.getAttribute('data-i18n-label');
+        const txt = T(key);
+        if(key && txt){
+          node.setAttribute('aria-label', txt);
+          node.setAttribute('title', txt);
+        }
+      });
+    } catch(_) {}
+  }
+
   // Keypad handling
   el.pad?.addEventListener('click', (e) => {
     const t = e.target;
@@ -424,9 +454,11 @@
     if (state.phase !== STATES.INPUT) return;
   const d = t.getAttribute('data-digit');
   if (d) {
+      pulsePad(t,'pressed');
       // Per-digit validation: compare to expected digit
       const expected = state.shown[state.typedIndex];
       if (d === expected) {
+  vibrate(20);
   state.typed += d;
   state.typedIndex += 1;
   el.digits.textContent = formatWithPiDot(state.typed);
@@ -440,6 +472,8 @@
           toCheck();
         }
       } else {
+        pulsePad(t,'fail');
+        vibrate([30,30,30]);
         // First mistake -> immediate failure
         toCheck();
       }
@@ -455,5 +489,6 @@
   // ------------------------------
   // Initialize
   // ------------------------------
+  applyTranslations();
   toStart();
 })();
