@@ -94,5 +94,9 @@
     return i18n[userLang][key] || i18n.en[key] || key;
   }
 
+  // Expose both __i18n and a global T() alias expected by main.js
   window.__i18n = { dict: i18n, lang: userLang, t };
+  if(!window.T) {
+    window.T = t; // backward compatibility / convenience
+  }
 })();
