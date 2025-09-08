@@ -16,18 +16,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install webxdc-dev
-        run: npm install -g webxdc-dev
-
-      - name: Build webxdc
+      - name: Prepare dist folder
         run: |
           mkdir dist
-          webxdc-dev build -o dist/
+          # Copy your app files into dist (for browser preview)
+          cp -r index.html manifest.toml assets dist/ || true
+          # Create .xdc package (zip with .xdc extension)
+          cd dist
+          zip -r app.xdc ./*
+          cd ..
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
