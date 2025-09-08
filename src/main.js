@@ -43,6 +43,8 @@
     screenGameOver: document.getElementById('screen-gameover'),
     btnStart: document.getElementById('btn-start'),
   dbgLevel: document.getElementById('debug-level'),
+  dbgInc: document.getElementById('dbg-inc'),
+  dbgDec: document.getElementById('dbg-dec'),
   // submit button removed
     btnRetry: document.getElementById('btn-retry'),
   digits: document.getElementById('digits'),
@@ -446,6 +448,27 @@
       state.round = 3;
     }
     toShowDigits();
+  });
+
+  // Stepper controls for starting digits
+  function clampStartValue(n){
+    const min = Number(el.dbgLevel?.getAttribute('min')||1);
+    const max = Number(el.dbgLevel?.getAttribute('max')||PI_DIGITS.length);
+    if (!Number.isFinite(n)) n = 1;
+    return Math.min(Math.max(n, min), max);
+  }
+  function adjustStart(delta){
+    if(!el.dbgLevel) return;
+    const cur = Number(el.dbgLevel.value || '0');
+    const next = clampStartValue(cur + delta);
+    el.dbgLevel.value = String(next);
+  }
+  el.dbgInc?.addEventListener('click', () => adjustStart(1));
+  el.dbgDec?.addEventListener('click', () => adjustStart(-1));
+  // Keyboard accessibility: arrow up/down when focused on number input
+  el.dbgLevel?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') { e.preventDefault(); adjustStart(1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); adjustStart(-1); }
   });
 
   // Apply static translations to elements with data-i18n / data-i18n-label

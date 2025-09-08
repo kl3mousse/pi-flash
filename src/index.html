@@ -33,9 +33,13 @@
             <path d="M8 5v14l11-7z" fill="currentColor"></path>
           </svg>
         </button>
-        <div class="debug-row">
+        <div class="debug-row" id="start-at-row">
           <label for="debug-level">Start at</label>
-          <input id="debug-level" type="number" min="1" max="200" step="1" value="3" />
+          <div class="stepper" role="group" aria-label="Set starting digits">
+            <button type="button" class="step-btn" id="dbg-dec" aria-label="Decrease starting digits" title="-" tabindex="0">−</button>
+            <input id="debug-level" type="number" min="1" max="200" step="1" value="3" inputmode="numeric" />
+            <button type="button" class="step-btn" id="dbg-inc" aria-label="Increase starting digits" title="+" tabindex="0">+</button>
+          </div>
           <span>digits</span>
         </div>
       </section>
