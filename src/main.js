@@ -54,6 +54,7 @@
   timerText: document.getElementById('timer-text'),
   // mode pill removed
   lifeOverlay: document.getElementById('life-overlay'),
+  matrixBg: document.getElementById('matrix-bg'),
   };
 
   // ------------------------------
@@ -414,6 +415,24 @@
       }
     }
   }
+  
+    // ------------------------------
+  // Matrix Background
+  // ------------------------------
+  function setupMatrix() {
+    const chars = ['π', '1', '4', '1', '5', '9', '2', '6', '5', '3', '5'];
+    const columns = Math.floor(window.innerWidth / 30);
+
+    for (let i = 0; i < columns; i++) {
+      const span = document.createElement('span');
+      span.className = 'matrix-char';
+      span.textContent = chars[Math.floor(Math.random() * chars.length)];
+      span.style.left = `${Math.random() * 100}vw`;
+      span.style.animationDuration = `${Math.random() * 5 + 3}s`;
+      span.style.animationDelay = `${Math.random() * 5}s`;
+      el.matrixBg.appendChild(span);
+    }
+  }
 
   // ------------------------------
   // Event wiring
@@ -490,5 +509,6 @@
   // Initialize
   // ------------------------------
   applyTranslations();
+  setupMatrix();
   toStart();
 })();
