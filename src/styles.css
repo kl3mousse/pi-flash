@@ -96,6 +96,34 @@ body {
 .screen { display: none; text-align: center; }
 .screen.active { display: block; }
 
+.start-pi-symbol {
+  font-size: 8rem;
+  font-weight: 200;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+#screen-start h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.start-description {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 400px;
+  margin: 0 auto 1.5rem;
+}
+
+#screen-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .primary, .secondary, button {
   background: var(--accent);
   border: none;

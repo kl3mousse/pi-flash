@@ -20,21 +20,23 @@
       </div>
       <div class="timer" aria-label="time remaining">
         <div id="timer-bar" class="timer-bar" style="width:0%"></div>
-        <span id="timer-text" class="sr-only">—</span>
+        <span id="timer-text" class="sr-only">_</span>
       </div>
       <!-- Start Screen -->
       <section id="screen-start" class="screen active" aria-live="polite">
-        <h2 data-i18n="start">Memorize the digits of π</h2>
+        <div class="start-pi-symbol">π</div>
+        <h1>Memorize the digits of Pi</h1>
+        <p class="start-description">How many digits of pi can you remember? Test your memory in this addictive challenge.</p>
+        <button id="btn-start" class="primary icon-btn" data-i18n-label="startShort" aria-label="Start" title="Start" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M8 5v14l11-7z" fill="currentColor"></path>
+          </svg>
+        </button>
         <div class="debug-row">
           <label for="debug-level">Start at</label>
           <input id="debug-level" type="number" min="1" max="200" step="1" value="3" />
           <span>digits</span>
         </div>
-  <button id="btn-start" class="primary icon-btn" data-i18n-label="startShort" aria-label="Start" title="Start" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M8 5v14l11-7z" fill="currentColor"></path>
-          </svg>
-        </button>
       </section>
 
       <!-- Round Screen -->
