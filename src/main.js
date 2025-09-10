@@ -135,6 +135,15 @@
     return '';
   }
 
+  // Apply liquid style uniformly to all keypad buttons
+  function updatePadLiquidStyles(){
+    try {
+      const buttons = el.pad?.querySelectorAll('.pad-btn');
+      if(!buttons) return;
+      buttons.forEach(b=> b.classList.add('liquid-btn'));
+    } catch(_) { /* ignore */ }
+  }
+
   function sizeTier(len) {
     if (len >= 40) return 'size-5';
     if (len >= 30) return 'size-4';
@@ -267,7 +276,7 @@
     setScreen('screen-start');
     clearTimer();
     state.timeLeft = 0;
-    updateHUD();
+  updateHUD();
   }
 
   function toShowDigits() {
@@ -276,6 +285,8 @@
   const game = document.querySelector('.game');
   game.classList.add('phase-memorize');
   game.classList.remove('phase-input');
+  // ensure liquid styling reflects upcoming round immediately
+  updatePadLiquidStyles();
   // mode pill removed
   state.typed = '';
   state.typedIndex = 0;
@@ -334,6 +345,7 @@
     const cls = milestoneClass(state.score);
     if (cls) document.querySelector('.game').classList.add(cls);
     const reachedMilestone = MILESTONES.includes(state.score);
+  updatePadLiquidStyles();
     if (reachedMilestone && state.score === 10) {
       // celebrate first milestone with confetti, then continue
       runConfetti(2300, () => {
@@ -531,7 +543,31 @@
   // ------------------------------
   // Initialize
   // ------------------------------
+  function initLiquidPointerEffects(){
+    const rootTargets = [document.querySelector('.game')];
+    const btnTargets = () => Array.from(document.querySelectorAll('.liquid-btn'));
+    function apply(e){
+      const x = e.clientX, y = e.clientY;
+      [...rootTargets, ...btnTargets()].forEach(elm => {
+        if(!elm) return;
+        const r = elm.getBoundingClientRect();
+        const hx = ((x - r.left) / r.width) * 100; // percent
+        const hy = ((y - r.top) / r.height) * 100;
+        elm.style.setProperty('--hx', hx.toFixed(2)+'%');
+        elm.style.setProperty('--hy', hy.toFixed(2)+'%');
+        // subtle tilt relative to center
+        const cx = hx - 50;
+        const cy = hy - 50;
+        const tiltX = (cx / 50) * 10; // deg
+        const tiltY = (-(cy) / 50) * 10; // deg
+        elm.style.setProperty('--tilt-x', tiltX.toFixed(2)+'deg');
+        elm.style.setProperty('--tilt-y', tiltY.toFixed(2)+'deg');
+      });
+    }
+    window.addEventListener('pointermove', apply, { passive: true });
+  }
   applyTranslations();
   setupMatrix();
+  initLiquidPointerEffects();
   toStart();
 })();
