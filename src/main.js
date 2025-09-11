@@ -612,28 +612,51 @@
   function initLiquidPointerEffects(){
     const rootTargets = [document.querySelector('.game')];
     const btnTargets = () => Array.from(document.querySelectorAll('.liquid-btn'));
-    function apply(e){
+    let rafId = null;
+    let lastEvent = null;
+    function process(){
+      rafId = null;
+      const e = lastEvent; if(!e) return;
       const x = e.clientX, y = e.clientY;
-      [...rootTargets, ...btnTargets()].forEach(elm => {
+      // only update hovered button (closest) + container to cut style recalcs
+      let targetBtns = [];
+      const hovered = document.elementFromPoint(x,y);
+      if(hovered && hovered.classList && hovered.classList.contains('liquid-btn')) {
+        targetBtns.push(hovered);
+      }
+      if(targetBtns.length === 0){
+        // fallback: none hovered -> skip per-button updates
+      }
+      [...rootTargets, ...targetBtns].forEach(elm => {
         if(!elm) return;
         const r = elm.getBoundingClientRect();
-        const hx = ((x - r.left) / r.width) * 100; // percent
+        const hx = ((x - r.left) / r.width) * 100;
         const hy = ((y - r.top) / r.height) * 100;
-        elm.style.setProperty('--hx', hx.toFixed(2)+'%');
-        elm.style.setProperty('--hy', hy.toFixed(2)+'%');
-        // subtle tilt relative to center
-        const cx = hx - 50;
-        const cy = hy - 50;
-        const tiltX = (cx / 50) * 10; // deg
-        const tiltY = (-(cy) / 50) * 10; // deg
-        elm.style.setProperty('--tilt-x', tiltX.toFixed(2)+'deg');
-        elm.style.setProperty('--tilt-y', tiltY.toFixed(2)+'deg');
+        elm.style.setProperty('--hx', hx.toFixed(1)+'%');
+        elm.style.setProperty('--hy', hy.toFixed(1)+'%');
+        const cx = hx - 50; const cy = hy - 50;
+        elm.style.setProperty('--tilt-x', (cx * 0.18).toFixed(1)+'deg');
+        elm.style.setProperty('--tilt-y', (-cy * 0.18).toFixed(1)+'deg');
       });
     }
-    window.addEventListener('pointermove', apply, { passive: true });
+    function onMove(e){
+      lastEvent = e;
+      if(rafId == null){ rafId = requestAnimationFrame(process); }
+    }
+    window.addEventListener('pointermove', onMove, { passive: true });
+  }
+  function detectLowSpec(){
+    try {
+      const nav = navigator || {};
+      const cores = (nav.hardwareConcurrency||4);
+      const mem = (nav.deviceMemory||4);
+      const low = cores <= 4 || mem <= 4; // heuristic
+      if(low) document.body.classList.add('perf-low');
+    } catch(_) {}
   }
   applyTranslations();
   setupMatrix();
+  detectLowSpec();
   initLiquidPointerEffects();
   initScoreUpdates();
   toStart();
