@@ -87,7 +87,7 @@ body {
   border: 1px solid var(--glass-border);
   box-shadow: 0 2px 6px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.35) inset, 0 4px 18px -4px rgba(34,211,238,0.5);
   overflow: hidden;
-  transition: transform .5s cubic-bezier(.34,1.56,.64,1), box-shadow .55s ease, background .6s ease;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .4s ease, background .5s ease;
   --hx: 50%;
   --hy: 50%;
   --tilt-x: 0deg;
@@ -341,7 +341,7 @@ button:disabled { opacity: .6; cursor: default; }
   box-shadow: 0 2px 6px -2px rgba(34,211,238,0.45), 0 0 0 1px rgba(255,255,255,0.25) inset;
   position: relative;
   overflow: hidden;
-  transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .45s ease, background .5s ease;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .35s ease, background .45s ease;
   --hx: 50%;
   --hy: 50%;
   --tilt-x: 0deg;
@@ -372,13 +372,18 @@ button:disabled { opacity: .6; cursor: default; }
   /* animation: btnSheen 9s linear infinite; */
   pointer-events: none;
 }
-.pad-btn.liquid-btn:hover { transform: translateY(-4px) rotateX(var(--tilt-y)) rotateY(var(--tilt-x)); box-shadow: 0 6px 18px -6px rgba(34,211,238,0.55), 0 0 0 1px rgba(255,255,255,0.35) inset; }
+  .pad-btn.liquid-btn:hover { transform: translateY(-3px) rotateX(var(--tilt-y)) rotateY(var(--tilt-x)); box-shadow: 0 6px 16px -6px rgba(34,211,238,0.5), 0 0 0 1px rgba(255,255,255,0.35) inset; }
 .pad-btn.liquid-btn:active { transform: translateY(0) scale(.94); }
 .pad-btn:active { filter: brightness(1.2); }
-  .pad-btn.pressed { animation: pad-press .18s ease; }
+  .pad-btn.pressed { animation: pad-press .12s ease; }
   .pad-btn.ok { animation: pad-ok .35s ease; }
   .pad-btn.fail { animation: pad-fail .45s ease; }
-  @keyframes pad-press { 0%{transform:scale(1);} 50%{transform:scale(.88);} 100%{transform:scale(1);} }
+  @keyframes pad-press { 0%{transform:scale(1);} 45%{transform:scale(.9);} 100%{transform:scale(1);} }
+
+/* Tapping state: remove transitions for immediate snap */
+.liquid-btn.tapping, .pad-btn.liquid-btn.tapping { transition: none !important; }
+.pad-btn.liquid-btn.tapping { transform: translateY(0) scale(.94) !important; }
+body.perf-low .pad-btn.liquid-btn:hover { transform: translateY(-1px); }
   @keyframes pad-ok { 0%{box-shadow:0 0 0 0 rgba(34,211,238,0.0);} 40%{box-shadow:0 0 0 6px rgba(34,211,238,0.35);} 100%{box-shadow:0 0 0 0 rgba(34,211,238,0);} }
   @keyframes pad-fail { 0%{transform:translateX(0);} 15%{transform:translateX(-5px);} 30%{transform:translateX(5px);} 45%{transform:translateX(-4px);} 60%{transform:translateX(4px);} 75%{transform:translateX(-2px);} 90%{transform:translateX(2px);} 100%{transform:translateX(0);} }
 .zero-span { grid-column: 1 / -1; }

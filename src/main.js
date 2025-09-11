@@ -223,7 +223,7 @@
     btn.classList.remove('pressed','ok','fail');
     void btn.offsetWidth; // force reflow
     btn.classList.add(cls);
-    setTimeout(()=> btn.classList.remove(cls), 500);
+  setTimeout(()=> btn.classList.remove(cls), 300); // faster rebound for responsiveness
   }
 
   // Confetti helper (simple DOM based)
@@ -604,6 +604,24 @@
     toStart();
   });
 
+  // Immediate tapping feedback: remove transition during press for snap feel
+  function setupTappingFeedback(){
+    function attach(elm){
+      if(!elm || elm.__tappingBound) return;
+      elm.__tappingBound = true;
+      const add = () => elm.classList.add('tapping');
+      const clear = () => elm.classList.remove('tapping');
+      elm.addEventListener('pointerdown', add);
+      elm.addEventListener('pointerup', clear);
+      elm.addEventListener('pointerleave', clear);
+      elm.addEventListener('pointercancel', clear);
+    }
+    const scan = () => document.querySelectorAll('.liquid-btn, .pad-btn.liquid-btn').forEach(attach);
+    scan();
+    const mo = new MutationObserver(()=> scan());
+    mo.observe(document.body,{subtree:true, attributes:true, attributeFilter:['class']});
+  }
+
   // (Chat message UI and listeners removed; game sends an optional status on game over only.)
 
   // ------------------------------
@@ -659,5 +677,6 @@
   detectLowSpec();
   initLiquidPointerEffects();
   initScoreUpdates();
+  setupTappingFeedback();
   toStart();
 })();
