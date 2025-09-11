@@ -73,6 +73,12 @@
   typedIndex: 0, // current index for per-digit validation
     timerId: null,
     timeLeft: 0,
+  // webxdc integration state
+  lastSentScore: null,
+  lastSentAt: 0,
+  globalBestScore: 0,
+  globalBestPlayer: '',
+  globalBestAddr: '',
   };
 
   // ------------------------------
@@ -252,6 +258,71 @@
   }
 
   // ------------------------------
+  // webxdc score integration
+  // Aligns with Pac-1D / CrappyBird update schema
+  // ------------------------------
+  function sendFinalScore(rawScore){
+    try {
+      if(!window.webxdc || typeof window.webxdc.sendUpdate !== 'function') return;
+      let score = Math.floor(Number(rawScore));
+      if(!Number.isFinite(score) || score <= 0) return;
+      if(score > 100000000) score = 100000000; // clamp upper bound
+      // dedupe: same score within 2s
+      const now = Date.now();
+      if(state.lastSentScore === score && (now - state.lastSentAt) < 2000) return;
+      // ensure identity available; if not, delay slightly
+      if(!window.webxdc.selfAddr || !window.webxdc.selfName){
+        setTimeout(()=> sendFinalScore(score), 300);
+        return;
+      }
+      const info = `${window.webxdc.selfName} scored ${score}`;
+      const payload = {
+        score,
+        byAddr: window.webxdc.selfAddr,
+        byName: window.webxdc.selfName
+      };
+      window.webxdc.sendUpdate({
+        payload,
+        info,
+        summary: 'Score:' + score
+      });
+      state.lastSentScore = score;
+      state.lastSentAt = now;
+    } catch(_) { /* ignore send issues */ }
+  }
+
+  function handleIncomingUpdate(update){
+    try {
+      if(!update || !update.payload) return;
+      const p = update.payload;
+      const incomingScore = Math.floor(Number(p.score));
+      if(!Number.isFinite(incomingScore) || incomingScore <= 0) return;
+      if(incomingScore > state.globalBestScore){
+        state.globalBestScore = incomingScore;
+        state.globalBestPlayer = p.byName || p.byAddr || 'Player';
+        state.globalBestAddr = p.byAddr || '';
+      }
+      // update local best if this user (defensive check)
+      if(p.byAddr && window.webxdc?.selfAddr && p.byAddr === window.webxdc.selfAddr){
+        if(incomingScore > state.best){
+          state.best = incomingScore;
+          localStorage.setItem('pi_flash_best', String(state.best));
+        }
+      }
+    } catch(_) { /* ignore */ }
+  }
+
+  function initScoreUpdates(){
+    try {
+      if(window.webxdc && typeof window.webxdc.setUpdateListener === 'function'){
+        window.webxdc.setUpdateListener((update) => {
+          handleIncomingUpdate(update);
+        });
+      }
+    } catch(_) { /* ignore */ }
+  }
+
+  // ------------------------------
   // State transitions
   // ------------------------------
   function toStart() {
@@ -371,13 +442,8 @@
   document.querySelector('.game').classList.remove('phase-memorize', 'phase-input');
   document.getElementById('final-score').textContent = `🔢 ${state.score}`;
   document.getElementById('best-score').textContent = `🏅 ${state.best}`;
-
-    // Optional: send status update to chat
-    try {
-      window.webxdc?.sendUpdate?.({
-        payload: { type: 'game_over', score: state.score, best: state.best },
-      }, `Pi Flash — scored ${state.score} (best ${state.best})`);
-    } catch (_) { /* noop */ }
+  // Emit standardized score update (one per completed run)
+  sendFinalScore(state.score);
   }
 
   function handleGuess(isCorrect) {
@@ -569,5 +635,6 @@
   applyTranslations();
   setupMatrix();
   initLiquidPointerEffects();
+  initScoreUpdates();
   toStart();
 })();
