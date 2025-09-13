@@ -1,6 +1,6 @@
 {
   "name": "pi-flash",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "private": true,
   "description": "Game to memorize and reproduce the digits of π.",
   "scripts": {
