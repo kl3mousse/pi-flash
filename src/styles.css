@@ -1,4 +1,4 @@
-/* Pi Flash styles */
+/* Pi Flash styles - Performance Optimized */
 :root {
   --bg: #0f172a;
   --panel: #111827;
@@ -8,12 +8,12 @@
   --accent-2: #a78bfa;
   --danger: #f43f5e;
   --ok: #34d399;
-  /* Enhanced glass variables */
-  --glass-blur: 22px;
-  --glass-tint: rgba(255,255,255,0.10);
-  --glass-border: rgba(255,255,255,0.35);
-  --glass-inner: rgba(255,255,255,0.25);
-  --glass-specular: rgba(255,255,255,0.6);
+  /* Reduced glass variables for better performance */
+  --glass-blur: 8px; /* Reduced from 22px */
+  --glass-tint: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.25);
+  --glass-inner: rgba(255,255,255,0.20);
+  --glass-specular: rgba(255,255,255,0.4);
   --glass-accent-a: #22d3ee;
   --glass-accent-b: #a78bfa;
 }
@@ -29,23 +29,20 @@ body {
   overflow: hidden;
 }
 
-/* Liquid glass effect base styles */
+/* Simplified liquid glass effect - performance optimized */
 .liquid-glass {
   position: relative;
   isolation: isolate;
   background: linear-gradient(160deg,var(--glass-tint),rgba(255,255,255,0.02));
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%); /* Reduced saturation */
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   overflow: hidden;
-  --hx: 50%;
-  --hy: 50%;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --lift: 0px;
-  transition: box-shadow .5s ease, border-color .6s ease;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 10px 35px -12px rgba(0,0,0,0.6), 0 2px 4px -1px rgba(0,0,0,.4);
+  transition: box-shadow .3s ease, border-color .4s ease; /* Reduced transition times */
+  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 6px 20px -8px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,.3);
 }
+
+/* Simplified pseudo-elements - no animations by default */
 .liquid-glass::before,
 .liquid-glass::after {
   content: "";
@@ -54,77 +51,77 @@ body {
   pointer-events: none;
   mix-blend-mode: overlay;
 }
-/* moving soft highlights */
+
 .liquid-glass::before {
-  background:
-    radial-gradient(circle at var(--hx) var(--hy), rgba(255,255,255,0.7), transparent 55%),
-    radial-gradient(circle at 80% 70%, rgba(255,255,255,0.18), transparent 60%),
-    linear-gradient(120deg, var(--glass-accent-a)20%, var(--glass-accent-b) 55%, transparent 80%);
-  filter: url(#liquid-distort);
-  /* animation removed for test: liquidShift 18s linear infinite; */
-  opacity: .55;
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.4), transparent 65%);
+  opacity: .3;
 }
+
 .liquid-glass::after {
-  background:
-    linear-gradient(165deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 30%),
-    radial-gradient(circle at 65% 20%, rgba(34,211,238,0.25), transparent 55%),
-    radial-gradient(circle at 35% 85%, rgba(167,139,250,0.25), transparent 60%);
+  background: linear-gradient(145deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%);
   mix-blend-mode: plus-lighter;
-  /* animation removed for test: liquidDrift 26s ease-in-out infinite; */
-  opacity: .45;
+  opacity: .25;
 }
 
 @keyframes liquidShift { to { transform: translate3d(0,0,0) rotate(360deg); } }
 @keyframes liquidDrift { 0% { transform: translateY(-4%) scale(1); } 50% { transform: translateY(4%) scale(1.03); } 100% { transform: translateY(-4%) scale(1); } }
 
-/* Elevated glass buttons */
+/* Simplified elevated glass buttons */
 .liquid-btn {
   position: relative;
-  background: linear-gradient(150deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0.15) 100%),
-              linear-gradient(160deg, var(--glass-accent-a), var(--glass-accent-b));
-  background-blend-mode: overlay,normal;
+  background: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 100%);
   color: #021c24;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.35) inset, 0 4px 18px -4px rgba(34,211,238,0.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.25) inset;
   overflow: hidden;
-  transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .4s ease, background .5s ease;
-  --hx: 50%;
-  --hy: 50%;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --lift: 0px;
-  transform-style: preserve-3d;
+  transition: transform .2s ease, box-shadow .3s ease; /* Faster transitions */
 }
+
+/* Simplified pseudo-element - no complex animations */
 .liquid-btn::before {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at var(--hx) var(--hy), rgba(255,255,255,0.75), transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.4), transparent 70%);
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.6), transparent 70%);
   mix-blend-mode: soft-light;
-  filter: url(#liquid-distort);
-  /* animation: btnLiquid 18s linear infinite; */
-  opacity: .9;
+  opacity: .7;
 }
+
 .liquid-btn::after {
   content: "";
-  position: absolute; left: -40%; top: -40%; width: 180%; height: 180%;
-  background: conic-gradient(from 0deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 40% 60%, rgba(255,255,255,0.25));
+  position: absolute; 
+  left: -20%; 
+  top: -20%; 
+  width: 140%; 
+  height: 140%;
+  background: conic-gradient(from 0deg, rgba(255,255,255,0.15), rgba(255,255,255,0) 50%);
   mix-blend-mode: overlay;
-  /* animation: btnSheen 7.5s linear infinite; */
 }
-@keyframes btnLiquid { to { transform: rotate(360deg); } }
-@keyframes btnSheen { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
 
-.liquid-btn:hover:not(:disabled) { transform: translateY(-4px) translateZ(8px) rotateX(var(--tilt-y)) rotateY(var(--tilt-x)); box-shadow: 0 10px 26px -8px rgba(34,211,238,0.55), 0 6px 12px -4px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.4) inset; }
-.liquid-btn:active:not(:disabled) { transform: translateY(0) scale(.95); box-shadow: 0 4px 12px -4px rgba(34,211,238,0.45), 0 0 0 1px rgba(255,255,255,0.45) inset; }
+.liquid-btn:hover:not(:disabled) { 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 12px -4px rgba(34,211,238,0.4), 0 0 0 1px rgba(255,255,255,0.3) inset; 
+}
+.liquid-btn:active:not(:disabled) { 
+  transform: translateY(0) scale(.95); 
+  box-shadow: 0 2px 6px -2px rgba(34,211,238,0.3), 0 0 0 1px rgba(255,255,255,0.3) inset; 
+}
 
-/* Reduce motion preference */
+/* Remove motion preference for performance */
 @media (prefers-reduced-motion: reduce) {
-  .liquid-glass::before, .liquid-glass::after, .liquid-btn::before, .liquid-btn::after { animation: none !important; filter: none !important; }
+  .liquid-glass::before, 
+  .liquid-glass::after, 
+  .liquid-btn::before, 
+  .liquid-btn::after { 
+    animation: none !important; 
+    filter: none !important; 
+  }
+  #matrix-bg {
+    display: none;
+  }
 }
 
+/* Matrix background - always enabled */
 #matrix-bg {
   position: fixed;
   top: 0;
@@ -133,7 +130,7 @@ body {
   height: 100%;
   z-index: -1;
   overflow: hidden;
-  opacity: 0.3;
+  opacity: 0.15; /* Subtle but visible */
 }
 
 .matrix-char {
@@ -191,8 +188,14 @@ body {
               .life-heart.lost { filter: grayscale(1) brightness(.35); }
               @keyframes heart-pop { 0%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(255,0,0,0));} 35%{transform:scale(1.35) rotate(-8deg);} 60%{transform:scale(.55) rotate(8deg);filter:grayscale(1) brightness(.4);} 100%{transform:scale(.6) rotate(0deg);filter:grayscale(1) brightness(.35);} }
 
-              /* Confetti */
-              .confetti-layer { position: fixed; inset:0; overflow:hidden; pointer-events:none; z-index:200; }
+              /* Confetti - always enabled */
+              .confetti-layer { 
+                position: fixed; 
+                inset:0; 
+                overflow:hidden; 
+                pointer-events:none; 
+                z-index:200; 
+              }
               .confetti-piece { position:absolute; width:10px; height:14px; top:-20px; opacity:0; transform:translateY(0) rotate(0deg); border-radius:2px; }
               @keyframes confetti-fall {
                 0% { transform: translate3d(var(--x,0), -10vh, 0) rotate(var(--r,0deg)); opacity:0; }
@@ -215,11 +218,11 @@ body {
 .game {
   max-width: 720px;
   margin: 0 auto;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 1.25rem;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(4px); /* Reduced from 6px */
 }
 .debug-row { display: inline-flex; align-items: center; gap: .55rem; color: var(--muted); font-size: .9rem; margin-top: .85rem; margin-bottom: .5rem; }
 .debug-row label { font-weight: 500; }
@@ -330,50 +333,45 @@ button:disabled { opacity: .6; cursor: default; }
   font-weight: 700;
   cursor: pointer;
 }
-/* Keypad liquid adaptation (fixed structure) */
+/* Simplified keypad buttons for better performance */
 .pad-btn.liquid-btn {
-  background:
-    linear-gradient(150deg, rgba(255,255,255,0.55), rgba(255,255,255,0.15)),
-    linear-gradient(160deg, var(--glass-accent-a), var(--glass-accent-b));
-  background-blend-mode: overlay, normal;
-  border: 1px solid rgba(255,255,255,0.35);
+  background: linear-gradient(145deg, rgba(255,255,255,0.4), rgba(255,255,255,0.15));
+  border: 1px solid rgba(255,255,255,0.25);
   color: #041c24;
-  box-shadow: 0 2px 6px -2px rgba(34,211,238,0.45), 0 0 0 1px rgba(255,255,255,0.25) inset;
+  box-shadow: 0 2px 4px -1px rgba(34,211,238,0.3), 0 0 0 1px rgba(255,255,255,0.2) inset;
   position: relative;
   overflow: hidden;
-  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .35s ease, background .45s ease;
-  --hx: 50%;
-  --hy: 50%;
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
+  transition: transform .15s ease, box-shadow .25s ease; /* Faster transitions */
 }
+
 .pad-btn.liquid-btn::before {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at var(--hx) var(--hy), rgba(255,255,255,0.8), transparent 60%),
-    radial-gradient(circle at 75% 70%, rgba(255,255,255,0.35), transparent 65%);
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.6), transparent 70%);
   mix-blend-mode: plus-lighter;
-  filter: url(#liquid-distort);
-  /* animation: btnLiquid 24s linear infinite; */
-  opacity: .75;
+  opacity: .6;
   pointer-events: none;
 }
+
 .pad-btn.liquid-btn::after {
   content: "";
   position: absolute;
-  left: -35%;
-  top: -35%;
-  width: 170%;
-  height: 170%;
-  background: conic-gradient(from 0deg, rgba(255,255,255,0.20), rgba(255,255,255,0) 40% 60%, rgba(255,255,255,0.28));
+  left: -25%;
+  top: -25%;
+  width: 150%;
+  height: 150%;
+  background: conic-gradient(from 0deg, rgba(255,255,255,0.15), rgba(255,255,255,0) 50%);
   mix-blend-mode: overlay;
-  /* animation: btnSheen 9s linear infinite; */
   pointer-events: none;
 }
-  .pad-btn.liquid-btn:hover { transform: translateY(-3px) rotateX(var(--tilt-y)) rotateY(var(--tilt-x)); box-shadow: 0 6px 16px -6px rgba(34,211,238,0.5), 0 0 0 1px rgba(255,255,255,0.35) inset; }
-.pad-btn.liquid-btn:active { transform: translateY(0) scale(.94); }
+  .pad-btn.liquid-btn:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px -4px rgba(34,211,238,0.4), 0 0 0 1px rgba(255,255,255,0.3) inset; 
+  }
+  .pad-btn.liquid-btn:active { 
+    transform: translateY(0) scale(.96); 
+  }
 .pad-btn:active { filter: brightness(1.2); }
   .pad-btn.pressed { animation: pad-press .12s ease; }
   .pad-btn.ok { animation: pad-ok .35s ease; }

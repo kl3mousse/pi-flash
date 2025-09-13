@@ -226,7 +226,7 @@
   setTimeout(()=> btn.classList.remove(cls), 300); // faster rebound for responsiveness
   }
 
-  // Confetti helper (simple DOM based)
+  // Confetti helper - always enabled
   function runConfetti(duration = 2200, cb) {
     const layer = document.createElement('div');
     layer.className = 'confetti-layer';
@@ -371,7 +371,7 @@
   el.digits.classList.remove('size-2','size-3','size-4','size-5');
   const tier = sizeTier(state.round);
   if (tier) el.digits.classList.add(tier);
-  requestAnimationFrame(autoScaleDigits);
+  autoScaleDigits(); // Direct call instead of requestAnimationFrame for better performance
   if (el.hint) el.hint.textContent = `Round ${state.round}: Remember these digits.`;
 
     // Show for a short delay: proportional to digits but capped
@@ -497,7 +497,7 @@
   }
   
     // ------------------------------
-  // Matrix Background
+  // Matrix Background - always enabled
   // ------------------------------
   function setupMatrix() {
     const chars = ['π', '1', '4', '1', '5', '9', '2', '6', '5', '3', '5'];
@@ -543,6 +543,7 @@
   }
   el.dbgInc?.addEventListener('click', () => adjustStart(1));
   el.dbgDec?.addEventListener('click', () => adjustStart(-1));
+  
   // Keyboard accessibility: arrow up/down when focused on number input
   el.dbgLevel?.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowUp') { e.preventDefault(); adjustStart(1); }

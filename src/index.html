@@ -13,7 +13,8 @@
     <header class="app-header">
       <h1>Pi Flash</h1>
     </header>
-    <!-- SVG filters for liquid glass effect -->
+    <!-- SVG filters disabled for performance -->
+    <!--
     <svg width="0" height="0" style="position:absolute">
       <filter id="liquid-distort">
         <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="8" result="noise">
@@ -32,6 +33,7 @@
         <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
       </filter>
     </svg>
+    -->
 
     <main id="game" class="game liquid-glass">
       <div class="hud hud-inline" aria-label="status">
@@ -52,15 +54,14 @@
             <path d="M8 5v14l11-7z" fill="currentColor"></path>
           </svg>
         </button>
-        <div class="debug-row" id="start-at-row">
-          <label for="debug-level">Start at</label>
-          <div class="stepper" role="group" aria-label="Set starting digits">
-            <button type="button" class="step-btn" id="dbg-dec" aria-label="Decrease starting digits" title="-" tabindex="0">−</button>
-            <input id="debug-level" type="number" min="1" max="200" step="1" value="3" inputmode="numeric" />
-            <button type="button" class="step-btn" id="dbg-inc" aria-label="Increase starting digits" title="+" tabindex="0">+</button>
-          </div>
-          <span>digits</span>
+              <div class="debug-row">
+        <label for="debug-level" data-i18n="startingDigits">Starting Digits:</label>
+        <div class="stepper">
+          <button type="button" id="dbg-dec" class="step-btn" data-i18n-label="decrease">−</button>
+          <input type="number" id="debug-level" min="1" max="50" value="3" />
+          <button type="button" id="dbg-inc" class="step-btn" data-i18n-label="increase">+</button>
         </div>
+      </div>
       </section>
 
       <!-- Round Screen -->
